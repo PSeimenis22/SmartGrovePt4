@@ -3,34 +3,75 @@ package Polymorphism;
 import java.time.LocalDate;
 import java.time.Month;
 
-// This subclass is specialized for olive production and separates it from general greenery.
 public class OliveTree extends Tree implements Harvestable {
-    public OliveTree(int id, LocalDate plantDate, String species, String scientificName) {
-        super(id, plantDate, species, scientificName);
-        this.plantYear = 2000; // 1st requirement: set plantYear to 2000
-    }
+    private String oliveType;
+    private double oilContent = 0.25;
+    private double yieldAmount = 300.0;
+    private boolean isAlternateBearing = true;
 
-    @Override
-    public double collectYield() {
-        return 300.0; // 2nd requirement: 300kgr collected
-    }
+    public OliveTree(int id, LocalDate plantDate, String oliveType, double oilContent) {
+        // Sends info to the parent tree class
+        super(id, plantDate, "Olive Tree", "Olea europaea");
+        this.oliveType = oliveType;
+        this.oilContent = oilContent;
+        // Gets the specific year from the plant date to calculate age later
+        this.plantYear = plantDate.getYear();
+        this.isAlternateBearing = true;
 
+    }
+    // Handles the harvest and checks for errors
+    public double recordHarvest() throws LowYieldException {
+        double result = harvestFruit();
+
+        if (result < 50.0) {
+            throw new LowYieldException("Warning: Yield is too low (" + result + " liters). Check soil moisture!");
+        }
+        return result;
+    }
+    // Overrides the Harvestable interface to provide rules for the harvest
     @Override
     public double harvestFruit() {
-        double product = 0.0; // 3rd requirement: return a double named product
+        double product = 0.0;
         int currentYear = LocalDate.now().getYear();
         int treeAge = currentYear - this.plantYear;
         Month month = LocalDate.now().getMonth();
-        // 4th requirement: Age > 5 and the season must be november, december, january, february or march
-        boolean isHarvestSeason = (month == Month.NOVEMBER || month == Month.DECEMBER || month == Month.JANUARY || month == Month.FEBRUARY || month == Month.MARCH);
-
+        // I used november to may as harvest months
+        boolean isHarvestSeason = (month == Month.NOVEMBER || month == Month.DECEMBER ||
+                month == Month.JANUARY || month == Month.FEBRUARY ||
+                month == Month.MARCH) || month ==Month.APRIL || month ==Month.MAY;
+        // Tree must be older than 5 years and it must be the right season
         if (treeAge > 5 && isHarvestSeason) {
-            double kgr = collectYield();
-            double oilContent = 0.25; // 5th requirement: 25% oil content
-            product = kgr * oilContent; // Calculates the product double
-
+            product = calculateOilYield();
         }
         return product;
     }
+    // Returns the total weight (kg) of olives
+    @Override
+    public double collectYield() {
+        return this.yieldAmount;
+    }
+    // Method to calculate oil liters
+    public double calculateOilYield() {
+        return collectYield() * 0.25;
+    }
+    // Method to finish the harvest and reset the tree's cycle
+    public double harvestOlives() {
+        this.isAlternateBearing = !this.isAlternateBearing;
+        return collectYield();
+    }
+    public int getPlantYear() {
+        return this.plantYear;
+    }
 
+    public String getOliveType() {
+        return this.oliveType;
+    }
+
+    public double getOilContent() {
+        return this.oilContent;
+    }
+
+    public boolean isAlternateBearing() {
+        return this.isAlternateBearing;
+    }
 }
